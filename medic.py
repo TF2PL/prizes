@@ -1,6 +1,7 @@
 #!/usr/bin/env nix-shell
 #!nix-shell -i python3 -p python3 python3Packages.requests
 
+import datetime
 import requests
 import traceback
 import logging
@@ -23,32 +24,37 @@ def entries(hub, start, end, name, limit=20):
     while True:
         logging.info(f"  page {offset // limit}")
         response = requests.get(
-                f"https://open.faceit.com/data/v4/hubs/{hub}/matches",
-                headers=dict(authorization=f"Bearer {API_KEY}"),
+                "https://api.faceit.com/match-history/v4/matches/competition",
+                # headers=dict(authorization=f"Bearer {API_KEY}"),
                 params=dict(
-                    offset=offset,
-                    limit=limit,
-                    type="past",
+                    id=hub,
+                    page=offset//limit,
+                    size=limit,
+                    type="hub",
                 ),
             )
+        if response.status_code == 500:
+            logging.error("FACEIT broke")
+            break
         if not response.ok:
             logging.info(f"  retrying after HTTP {response.status_code}: {response.text}")
             continue
         data = response.json()
-        if not data['items']:
+        if not data['payload']:
             logging.info(f"  found empty page, assuming end")
             break
-        for item in data['items']:
-            if item["finished_at"] < start:
+        for item in data['payload']:
+            item["finishedAt"] = datetime.datetime.strptime(item["finishedAt"], "%a %b %d %H:%M:%S %Z %Y").timestamp()
+            if item["finishedAt"] < start:
                 logging.info("  found match younger than the range we're looking for, ending")
                 break
-            if item["finished_at"] not in range(start, end):
+            if item["finishedAt"] not in range(start, end):
                 continue
-            if item["status"] != "FINISHED":
+            if item["state"] != "finished":
                 continue
-            logging.info(f"  Match {item['match_id']} ({item['status']})")
+            logging.info(f"  Match {item['matchId']} ({item['state']})")
             stats_response = requests.get(
-                    f"https://open.faceit.com/data/v4/matches/{item['match_id']}/stats",
+                    f"https://open.faceit.com/data/v4/matches/{item['matchId']}/stats",
                     headers=dict(authorization=f"Bearer {API_KEY}"),
                 )
             if not stats_response.ok:
