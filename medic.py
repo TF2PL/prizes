@@ -44,7 +44,7 @@ def entries(hub, start, end, name, limit=20):
             logging.info(f"  found empty page, assuming end")
             break
         for item in data['payload']:
-            item["finishedAt"] = datetime.datetime.strptime(item["finishedAt"], "%a %b %d %H:%M:%S %Z %Y").timestamp()
+            item["finishedAt"] = datetime.datetime.strptime(item["finishedAt"], "%a %b %d %H:%M:%S %Z %Y")
             if item["finishedAt"] < start:
                 logging.info("  found match younger than the range we're looking for, ending")
                 break
@@ -73,17 +73,21 @@ def entries(hub, start, end, name, limit=20):
 
 if __name__ == "__main__":
     hubs = [
-            {"hub": "d168a467-25a7-4eb4-92e9-d98501a15755", "start": 1525132800, "end": 1527811200, "name": "NA Invite"},
-            {"hub": "dee30db4-5db8-4ed0-a9a6-74ebbd5c612f", "start": 1525132800, "end": 1527811200, "name": "NA Advanced"},
-            {"hub": "3c265612-dd2a-4d1f-8cf4-c8a6c1d92472", "start": 1525132800, "end": 1527811200, "name": "NA Amateur"},
-            {"hub": "b23dd05f-5876-454c-9a48-4e35e105ebd8", "start": 1525132800, "end": 1527811200, "name": "NA Beginner"},
-            {"hub": "60166830-385b-4b26-acb5-4a6ba265623f", "start": 1525132800, "end": 1527811200, "name": "EU Invite"},
-            {"hub": "abce6d7d-c317-425f-944d-14b9235aec5c", "start": 1525132800, "end": 1527811200, "name": "EU Advanced"},
-            {"hub": "5dd0a523-dd96-420a-9c68-bbba6d0b1281", "start": 1525132800, "end": 1527811200, "name": "EU Amateur"},
-            {"hub": "f76beaa7-768b-4158-9a3c-0ae2b8ce3295", "start": 1525132800, "end": 1527811200, "name": "EU Beginner"},
+            {"hub": "d168a467-25a7-4eb4-92e9-d98501a15755", "name": "NA Invite"},
+            {"hub": "dee30db4-5db8-4ed0-a9a6-74ebbd5c612f", "name": "NA Advanced"},
+            {"hub": "3c265612-dd2a-4d1f-8cf4-c8a6c1d92472", "name": "NA Amateur"},
+            {"hub": "b23dd05f-5876-454c-9a48-4e35e105ebd8", "name": "NA Beginner"},
+            {"hub": "60166830-385b-4b26-acb5-4a6ba265623f", "name": "EU Invite"},
+            {"hub": "abce6d7d-c317-425f-944d-14b9235aec5c", "name": "EU Advanced"},
+            {"hub": "5dd0a523-dd96-420a-9c68-bbba6d0b1281", "name": "EU Amateur"},
+            {"hub": "f76beaa7-768b-4158-9a3c-0ae2b8ce3295", "name": "EU Beginner"},
         ]
     for hub in hubs:
-        hub['counter'] = entries(**hub)
+        hub['counter'] = entries(
+                **hub,
+                start=int(datetime.datetime(2018, 7, 1)),
+                end=int(datetime.datetime(2018, 8, 1)),
+            )
         print("Top 4 Medics for {name}:".format_map(hub))
         for (rank, (name, ubers)) in enumerate(hub['counter'].most_common(4), start=1):
             print(f" #{rank} {name} with {ubers} ubercharges")
