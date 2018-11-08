@@ -90,8 +90,8 @@ if __name__ == "__main__":
     for hub in hubs:
         hub['counter'] = entries(
                 **hub,
-                start=int(datetime.datetime(2018, 8, 1).timestamp()),
-                end=int(datetime.datetime(2018, 9, 1).timestamp()),
+                start=int(datetime.datetime(2018, 10, 1).timestamp()),
+                end=int(datetime.datetime(2018, 11, 1).timestamp()),
             )
         print("Top 4 Medics for {name}:".format_map(hub))
         for (rank, (name, ubers)) in enumerate(hub['counter'].most_common(4), start=1):
